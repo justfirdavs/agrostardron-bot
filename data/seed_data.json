@@ -1,0 +1,814 @@
+{
+  "teams": [
+    {
+      "code": "A",
+      "leader": "Firdavs Nematzoda",
+      "member1": "Durov",
+      "member2": "Obama",
+      "member3": "Netanyaxu"
+    },
+    {
+      "code": "B",
+      "leader": "Muhammadali Shukuraliyev",
+      "member1": "Putin",
+      "member2": "Putin",
+      "member3": "Pin"
+    },
+    {
+      "code": "C",
+      "leader": "Ozodbek Nazarbekov",
+      "member1": "Savicheva",
+      "member2": "Savicheva",
+      "member3": "Medvedev"
+    },
+    {
+      "code": "G",
+      "leader": null,
+      "member1": null,
+      "member2": null,
+      "member3": null
+    },
+    {
+      "code": "H",
+      "leader": null,
+      "member1": null,
+      "member2": null,
+      "member3": null
+    },
+    {
+      "code": "D",
+      "leader": "Rayhon Ganiyeva",
+      "member1": "Tayson",
+      "member2": "Tayson",
+      "member3": "Dias"
+    }
+  ],
+  "svod": [
+    {
+      "team": "A",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8H002004U",
+      "battery1": "626552",
+      "battery2": "785612",
+      "battery3": "978541",
+      "generator": null,
+      "vehicle": "10X900HA"
+    },
+    {
+      "team": "A",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL6C00200BQ",
+      "battery1": "9856666",
+      "battery2": "9867979",
+      "battery3": "3064444",
+      "generator": "1616",
+      "vehicle": null
+    },
+    {
+      "team": "B",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002007S",
+      "battery1": "9984440",
+      "battery2": "1234567",
+      "battery3": "9854788",
+      "generator": "2020",
+      "vehicle": null
+    },
+    {
+      "team": "B",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002008E",
+      "battery1": "1446852",
+      "battery2": "7273919",
+      "battery3": "8201110",
+      "generator": "6QKZM7C0320404",
+      "vehicle": "01X555AA"
+    },
+    {
+      "team": "C",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7H002007C",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": "C",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7D002004W",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": "D",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002004B",
+      "battery1": "9723485",
+      "battery2": "1000000",
+      "battery3": "7000000",
+      "generator": "1212",
+      "vehicle": "01002UZB"
+    },
+    {
+      "team": "D",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8F00200A2",
+      "battery1": "5891110",
+      "battery2": null,
+      "battery3": null,
+      "generator": "8080",
+      "vehicle": "01001UZB"
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8E002008E",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AQA",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AE4",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025APJ",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025ADL",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025ADQ",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AP7",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AVP",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    },
+    {
+      "team": null,
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025ADX",
+      "battery1": null,
+      "battery2": null,
+      "battery3": null,
+      "generator": null,
+      "vehicle": null
+    }
+  ],
+  "drones": {
+    "64TBL8H002004U": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8H002004U",
+      "flight_hours": 0.5,
+      "flight_count": 5
+    },
+    "64TBL6C00200BQ": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL6C00200BQ",
+      "flight_hours": 236.6,
+      "flight_count": 2450
+    },
+    "64TBL8A002007S": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002007S",
+      "flight_hours": 334.1,
+      "flight_count": 3356
+    },
+    "64TBL8A002008E": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002008E",
+      "flight_hours": 396.4,
+      "flight_count": 3887
+    },
+    "64TBL7H002007C": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7H002007C",
+      "flight_hours": 401.7,
+      "flight_count": 3920
+    },
+    "64TBL7D002004W": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7D002004W",
+      "flight_hours": 104.1,
+      "flight_count": 982
+    },
+    "64TBL8A002004B": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002004B",
+      "flight_hours": 373.9,
+      "flight_count": 3576
+    },
+    "64TBL8F00200A2": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8F00200A2",
+      "flight_hours": 312.7,
+      "flight_count": 2951
+    },
+    "64TBL8E002008E": {
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8E002008E",
+      "flight_hours": null,
+      "flight_count": null
+    },
+    "B26WN5P0025AQA": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AQA",
+      "flight_hours": 11.7,
+      "flight_count": 152
+    },
+    "B26WN5P0025AE4": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AE4",
+      "flight_hours": 10.2,
+      "flight_count": 154
+    },
+    "B26WN5P0025APJ": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025APJ",
+      "flight_hours": 123,
+      "flight_count": 2108
+    },
+    "B26WN5P0025ADL": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025ADL",
+      "flight_hours": 94.3,
+      "flight_count": 1616
+    },
+    "B26WN5P0025ADQ": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025ADQ",
+      "flight_hours": 115.7,
+      "flight_count": 1850
+    },
+    "B26WN5P0025AP7": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AP7",
+      "flight_hours": 69.6,
+      "flight_count": 916
+    },
+    "B26WN5P0025AVP": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025AVP",
+      "flight_hours": 124.8,
+      "flight_count": 1943
+    },
+    "B26WN5P0025ADX": {
+      "manufacturer": "DJI",
+      "model": "T70P",
+      "serial": "B26WN5P0025ADX",
+      "flight_hours": 41.9,
+      "flight_count": 655
+    }
+  },
+  "batteries": [
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "626552",
+      "cycles": 142,
+      "drone_serial": "64TBL8H002004U"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "785612",
+      "cycles": 456,
+      "drone_serial": "64TBL8H002004U"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "978541",
+      "cycles": 648,
+      "drone_serial": "64TBL8H002004U"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "1446852",
+      "cycles": 154,
+      "drone_serial": "64TBL8A002008E"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "7273919",
+      "cycles": 888,
+      "drone_serial": "64TBL8A002008E"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "8201110",
+      "cycles": 1000,
+      "drone_serial": "64TBL8A002008E"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "5891110",
+      "cycles": 154,
+      "drone_serial": "64TBL8F00200A2"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D1560",
+      "serial": "9723485",
+      "cycles": 874,
+      "drone_serial": "64TBL8A002004B"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "1000000",
+      "cycles": 558,
+      "drone_serial": "64TBL8A002004B"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "7000000",
+      "cycles": 445,
+      "drone_serial": "64TBL8A002004B"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "9856666",
+      "cycles": 985,
+      "drone_serial": "64TBL6C00200BQ"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "9867979",
+      "cycles": 475,
+      "drone_serial": "64TBL6C00200BQ"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "3064444",
+      "cycles": 45,
+      "drone_serial": "64TBL6C00200BQ"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "9984440",
+      "cycles": 487,
+      "drone_serial": "64TBL8A002007S"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "1234567",
+      "cycles": 158,
+      "drone_serial": "64TBL8A002007S"
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "DB2160",
+      "serial": "9854788",
+      "cycles": 157,
+      "drone_serial": "64TBL8A002007S"
+    }
+  ],
+  "generators": [
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "6QKZM7C0320404",
+      "work_hours": 450,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 423,
+      "drone_serial": "64TBL8A002008E",
+      "repairs_count": 1
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "8080",
+      "work_hours": 350,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 312,
+      "drone_serial": "64TBL8F00200A2",
+      "repairs_count": 0
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "1212",
+      "work_hours": 124,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 100,
+      "drone_serial": "64TBL8A002004B",
+      "repairs_count": 0
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "1515",
+      "work_hours": 106,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 100,
+      "drone_serial": "64TBL8A002008E",
+      "repairs_count": 0
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "1616",
+      "work_hours": 450,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 444,
+      "drone_serial": "64TBL6C00200BQ",
+      "repairs_count": 0
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "2020",
+      "work_hours": 662,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 650,
+      "drone_serial": "64TBL8A002007S",
+      "repairs_count": 0
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "7070",
+      "work_hours": 785,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 750,
+      "drone_serial": null,
+      "repairs_count": 0
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D12000iE",
+      "serial": "9090",
+      "work_hours": 654,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 650,
+      "drone_serial": null,
+      "repairs_count": 0
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 598,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 550,
+      "drone_serial": null,
+      "repairs_count": null
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 487,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 450,
+      "drone_serial": null,
+      "repairs_count": null
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 323,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 300,
+      "drone_serial": null,
+      "repairs_count": null
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 545,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 500,
+      "drone_serial": null,
+      "repairs_count": null
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 650,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 650,
+      "drone_serial": null,
+      "repairs_count": null
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 999,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 950,
+      "drone_serial": null,
+      "repairs_count": null
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 452,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 450,
+      "drone_serial": null,
+      "repairs_count": null
+    },
+    {
+      "manufacturer": "DJI",
+      "model": "D14000iE",
+      "serial": null,
+      "work_hours": 874,
+      "oil_change_interval_hours": 50,
+      "last_oil_change_hours": 850,
+      "drone_serial": null,
+      "repairs_count": null
+    }
+  ],
+  "vehicles": [
+    {
+      "manufacturer": "Changan",
+      "plate_number": "10X900HA",
+      "tech_passport": "1234567",
+      "vin": "1233453",
+      "mileage_km": 79855,
+      "drone_serial": "64TBL8H002004U",
+      "oil_change_interval_km": 10000,
+      "last_oil_change_km": 70000
+    },
+    {
+      "manufacturer": "BYD",
+      "plate_number": "01001UZB",
+      "tech_passport": "7654321",
+      "vin": "1232352",
+      "mileage_km": 124548,
+      "drone_serial": "64TBL8F00200A2",
+      "oil_change_interval_km": 10000,
+      "last_oil_change_km": 120000
+    },
+    {
+      "manufacturer": "Denza",
+      "plate_number": "01002UZB",
+      "tech_passport": "1122331",
+      "vin": "12323453",
+      "mileage_km": 12458,
+      "drone_serial": "64TBL8A002004B",
+      "oil_change_interval_km": 10000,
+      "last_oil_change_km": 10000
+    },
+    {
+      "manufacturer": "Leopard",
+      "plate_number": "01X555AA",
+      "tech_passport": "4565456",
+      "vin": "123234",
+      "mileage_km": 39474,
+      "drone_serial": "64TBL8A002008E",
+      "oil_change_interval_km": 10000,
+      "last_oil_change_km": 30000
+    }
+  ],
+  "drone_repairs": [
+    {
+      "act_number": 1,
+      "date": "2026-05-26",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7H002007C",
+      "services": "1. Замена радара измерения вертикальной высоты - 1шт\n2. Замена прокладок на месте крепления воздушных винтов 1-8 двигателей - 32шт\n3. Замена воздушных охладителей двигателей луча М2 - 2шт\n4. Замена воздушных винтов луча М2 (U-CW) - 1 пара\n5. Замена крепления корпуса распылительных форсунок лучей М3-М4 - 2шт\n6. Замена бака - 1шт\n7. Диагностика систем дрона"
+    },
+    {
+      "act_number": 2,
+      "date": "2026-06-02",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002007S",
+      "services": "1. Ремонт правой фары - 1шт\n2. Замена прокладок на месте крепления воздушных винтов 1-8 двигателей - 32шт\n3. Установка барашковое соединение дискового распылителя - 2шт\n4. Диагностика систем дрона"
+    },
+    {
+      "act_number": 3,
+      "date": "2026-06-05",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002008E",
+      "services": "1. Замена бака (с дрона 64TBL8F002004B) - 1шт\n2. Замена тройника соединения насосов к баку (с дрона 64TBL8F002004B) - 1шт\n3. Установка форсунок распыления на лучи М3-М4 (с дрона 64TBL8F002004B) - 2шт\n4. Замена воздушных винтов луча М7 (L-CW) - 1пара\n5. Замена воздушных охладителей луча М7 - 1шт\n6. Замена прокладок на месте крепления воздушных винтов двигателей М3 и М7 - 16шт\n7. Диагностика систем дрона"
+    },
+    {
+      "act_number": 4,
+      "date": "2026-06-09",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002008E",
+      "services": "1.  Установка форсунок распыления на лучи М3 - 1шт\n2. Замена воздушных винтов луча М1 (U-CCW) - 1пара\n3. Замена воздушных винтов луча М3 (U-CCW) - 1пара\n4. Замена воздушных винтов луча М5 (L-CW) - 1пара\n5. Замена воздушных винтов луча М7 (L-CW) - 1пара\n6. Замена прокладок на месте крепления воздушных винтов двигателей М1, М3, М5 и М7 - 16шт\n7. Замена луча М4 в комплекте - 1комплект\n8. Диагностика систем дрона"
+    },
+    {
+      "act_number": 5,
+      "date": "2026-06-13",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7H002007C",
+      "services": "1. Замена луча М2 в комплекте (снято с 02) - 1шт  \n2. Замена фар (снято с 02) - 2шт\n3. Луч М3 двигатель М3 замена поврежденных воздушных винтов (U-CCW) - 1пара\n4. Луч М3 двигатель М7 замена поврежденных воздушных винтов (L-CW) - 1пара\n5. Луч М1 двигатель М1 замена поврежденных воздушных винтов (U-CCW) - 1пара\n6. Луч М1 двигатель М3 замена поврежденных воздушных винтов (L-CW) - 1пара\n7. Замена прокладок на месте крепления воздушных винтов двигателей - 32шт\n8. Луч М4 замена крепления форсунки к двигателю - 1шт\n9. Замена датчика уровня жидкости в баке (снято с 02) - 1комплект\n10. Замена насосов подачи жидкости к форсункам - 1комплект\n11. Замена бака - 1шт\n12. Диагностика систем дрона"
+    },
+    {
+      "act_number": 6,
+      "date": "2026-06-19",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL6C00200BQ",
+      "services": "1. Замена двигателя М2 на луче М2 (с дрона 64TBL7D002004W) - 1шт\n2. Замена воздушных винтов луча М4 (U-CW) - 1пара\n3. Диагностика систем дрона"
+    },
+    {
+      "act_number": 7,
+      "date": "2026-06-19",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7H002007C",
+      "services": "1. Замена луча М3 (снято с 02) - 1шт\n2. Замена форсунки на луче М4 (снято с 05) - 1шт\n3. Диагностика систем дрона"
+    },
+    {
+      "act_number": 8,
+      "date": "2026-06-23",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7D002004W",
+      "services": "1. Замена двигателя М3 на луче М3 (с дрона 64TBL8F00200A2) - 1шт\n2. Замена модуля камеры (с дрона 64TBL8F00200A2) - 1шт\n3. Диагностика систем дрона"
+    },
+    {
+      "act_number": 9,
+      "date": "2026-06-27",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL7D002004W",
+      "services": "1. Установка втулки крепления форсунок к лучам М3-М4 - 2шт\n2. Замена модуля камеры (с дрона 64TBL8F00200A2) - 1шт\n3. Диагностика систем дрона"
+    },
+    {
+      "act_number": 10,
+      "date": "2026-06-30",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL6C00200BQ",
+      "services": "1. Замена двигателя М4 на луче М4  (с дрона 64TBL7D002004W) - 1шт\n2. Диагностика систем дрона"
+    },
+    {
+      "act_number": 11,
+      "date": "2026-06-30",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002008E",
+      "services": "1. Замена крепления форсунки распыления на луче М4 - 1шт\n2. Диагностика систем дрона"
+    },
+    {
+      "act_number": 12,
+      "date": "2026-07-06",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002008E",
+      "services": "1. Замена распылительных форсунок на новые №1 и №2 (332 часа налета на момент замены) - 2шт\n2. Замена нагнетающиз насосов (332 часа налета на момент замены) - 1комплект\n3. Диагностика систем дрона"
+    },
+    {
+      "act_number": 13,
+      "date": "2026-07-07",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002007S",
+      "services": "1. Замена распылительных форсунок на новые №1 и №2 (396 часа налета на момент замены) - 2шт\n2. Замена луча М2 в комплекте (с дрона 64TBL7H002007C) - 1комплект\n3. Диагностика систем дрона"
+    },
+    {
+      "act_number": 14,
+      "date": "2026-07-15",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002007S",
+      "services": "1. Замена фар - 2шт\n2. Замена нагнетающиз насосов (401 часа налета на момент замены) - 1комплект\n3. Диагностика систем дрона"
+    },
+    {
+      "act_number": 15,
+      "date": "2026-07-17",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002008E",
+      "services": "1. Замена нагнетающиз насосов (338 часа налета на момент замены) - 1комплект\n2. Диагностика систем дрона"
+    },
+    {
+      "act_number": 16,
+      "date": "2026-08-07",
+      "manufacturer": "DJI",
+      "model": "T40",
+      "serial": "64TBL8A002007S",
+      "services": "1. Замена нагнетающиз насосов (359 часа налета на момент замены) - 1комплект\n2. Замена двигателя М8 на луче М4 - 1шт\n3. Диагностика систем дрона"
+    }
+  ],
+  "generator_repairs": [
+    {
+      "act_number": 1,
+      "date": "2026-08-13",
+      "manufacturer": "DJI",
+      "model": "D12000iEP",
+      "serial": "6QKZM7C0320404",
+      "services": "1. Диагностика систем генератора\n2. Замена воздушного фильтра\n3. Очистка отсека под воздушный фильтр от пыли и грязи\n4. Демонтаж и монтаж топливного фильтра (памперса)идля проверки\n5. Замена свечи зажигания\n6. Очистка инжектора средством К2 для очистки топливного инжектора"
+    }
+  ]
+}
