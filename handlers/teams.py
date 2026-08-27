@@ -1,9 +1,11 @@
 from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 import db
 import keyboards as kb
 import utils
+from states import TeamRename
 
 router = Router()
 
@@ -12,46 +14,60 @@ def _require_admin(user):
     return user and user["role"] == "admin"
 
 
+def _require_view(user):
+    return user and user["role"] in ("admin", "manager")
+
+
 @router.message(F.text == "👥 Команды")
 async def list_teams(message: Message):
     user = await db.get_user(message.from_user.id)
-    if not _require_admin(user):
-        await message.answer("Этот раздел доступен только администратору.")
+    if not _require_view(user):
+        await message.answer("Этот раздел доступен администратору и менеджерам.")
         return
-    teams = await db.list_teams()
+    teams = await db.list_claimed_teams_with_names()
     if not teams:
-        await message.answer("Команды не найдены.")
+        await message.answer("Пока ни одна команда не привязана к дрону.")
         return
     await message.answer("Команды:", reply_markup=kb.teams_list_kb(teams))
 
 
 @router.callback_query(F.data == "teams:list")
 async def back_to_teams(callback: CallbackQuery):
-    teams = await db.list_teams()
+    user = await db.get_user(callback.from_user.id)
+    if not _require_view(user):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+    teams = await db.list_claimed_teams_with_names()
     await callback.message.edit_text("Команды:", reply_markup=kb.teams_list_kb(teams))
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("team:"))
-async def open_team_card(callback: CallbackQuery):
-    code = callback.data.split(":", 1)[1]
-    team = await db.get_team(code)
-    if not team:
-        await callback.answer("Команда не найдена", show_alert=True)
-        return
+async def _render_team_card(code):
+    """Builds (text, markup) for a team card. Returns (None, None) if the
+    team no longer has a claimed drone (e.g. its leader was just removed)."""
+    claimed = await db.list_claimed_teams()
+    if code not in claimed:
+        return None, None
     drones = await db.list_drones(team_code=code)
     members = await db.list_team_members(code)
+    name = await db.get_team_name(code)
 
-    lines = [f"👥 <b>Команда {team['code']}</b>"]
-    lines.append(f"Код для входа в бот: <code>{team['code']}</code>")
-    lines.append("")
+    title = f"👥 <b>{name}</b> (код {code})" if name else f"👥 <b>Команда {code}</b>"
+    lines = [title, ""]
     lines.append(f"<b>Состав ({len(members)})</b>")
     if members:
         for m in members:
-            tag = "👑 руководитель" if m["is_leader"] else "пилот"
+            tag = "👑 руководитель" if m["role"] == "leader" else "пилот"
+            contact_bits = []
+            if m["phone"]:
+                contact_bits.append(m["phone"])
+            if m["username"]:
+                contact_bits.append(f"@{m['username']}")
+            contact = " · ".join(contact_bits) if contact_bits else "контакт не указан"
             lines.append(f"  • {m['full_name']} ({tag})")
+            lines.append(f"    📱 {contact}")
     else:
-        lines.append("  Пока никто не зарегистрировался с этим кодом")
+        lines.append("  Пока никто из команды не зарегистрирован в боте")
     lines.append("")
     lines.append(f"<b>Дроны команды ({len(drones)})</b>")
     if drones:
@@ -60,38 +76,89 @@ async def open_team_card(callback: CallbackQuery):
     else:
         lines.append("  дронов не назначено")
 
-    await callback.message.edit_text("\n".join(lines), reply_markup=kb.team_card_kb(code))
+    return "\n".join(lines), members
+
+
+@router.callback_query(F.data.startswith("team:"))
+async def open_team_card(callback: CallbackQuery):
+    user = await db.get_user(callback.from_user.id)
+    if not _require_view(user):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
+    code = callback.data.split(":", 1)[1]
+    text, members = await _render_team_card(code)
+    if text is None:
+        await callback.answer("Команда не найдена", show_alert=True)
+        return
+    is_admin = user["role"] == "admin"
+    markup = kb.team_card_kb(code, members=members, is_admin=is_admin)
+    await callback.message.edit_text(text, reply_markup=markup)
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("assign:menu:"))
-async def assign_menu(callback: CallbackQuery):
+@router.callback_query(F.data.startswith("team_rename:"))
+async def team_rename_start(callback: CallbackQuery, state: FSMContext):
     user = await db.get_user(callback.from_user.id)
     if not _require_admin(user):
         await callback.answer("Только для администратора", show_alert=True)
         return
-    serial = callback.data.split(":", 2)[2]
-    teams = await db.list_teams()
-    await callback.message.edit_text(
-        f"Назначить команду дрону <code>{serial}</code>:",
-        reply_markup=kb.assign_team_kb(serial, teams),
+    code = callback.data.split(":", 1)[1]
+    await state.update_data(team_code=code)
+    await state.set_state(TeamRename.waiting_name)
+    await callback.message.answer(
+        f"Введите новое имя для команды <code>{code}</code> (или «-», чтобы вернуть код как имя):",
+        reply_markup=kb.cancel_kb(),
     )
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("assign:set:"))
-async def assign_set(callback: CallbackQuery):
+@router.message(TeamRename.waiting_name)
+async def team_rename_finish(message: Message, state: FSMContext):
+    user = await db.get_user(message.from_user.id)
+    if not _require_admin(user):
+        await state.clear()
+        return
+    data = await state.get_data()
+    code = data.get("team_code")
+    text = (message.text or "").strip()
+    await db.set_team_name(code, None if text == "-" else text)
+    await state.clear()
+    await message.answer("✅ Имя команды обновлено.")
+
+    body, members = await _render_team_card(code)
+    if body:
+        await message.answer(body, reply_markup=kb.team_card_kb(code, members=members, is_admin=True))
+
+
+@router.callback_query(F.data.startswith("team_kick:"))
+async def team_kick_member(callback: CallbackQuery):
     user = await db.get_user(callback.from_user.id)
     if not _require_admin(user):
         await callback.answer("Только для администратора", show_alert=True)
         return
-    _, _, serial, team_code = callback.data.split(":")
-    await db.assign_drone_team(serial, team_code)
-    await callback.message.edit_text(
-        f"✅ Дрон <code>{serial}</code> назначен команде {team_code}.",
-        reply_markup=kb.team_card_kb(team_code),
-    )
-    await callback.answer()
+    _, telegram_id, code = callback.data.split(":")
+    target = await db.get_user(int(telegram_id))
+    await db.remove_team_member(int(telegram_id))
+    name = target["full_name"] if target else str(telegram_id)
+    await callback.answer(f"{name} удалён(а) из команды", show_alert=True)
+
+    try:
+        await callback.bot.send_message(
+            int(telegram_id),
+            "Вас удалили из команды. Если это ошибка — обратитесь к администратору. "
+            "Нажмите /start, чтобы привязаться заново.",
+        )
+    except Exception:
+        pass
+
+    text, members = await _render_team_card(code)
+    if text is None:
+        await callback.message.edit_text(
+            "Команда расформирована (был удалён руководитель). Дрон свободен для новой привязки.",
+            reply_markup=kb.team_card_kb(code, members=[], is_admin=False),
+        )
+        return
+    await callback.message.edit_text(text, reply_markup=kb.team_card_kb(code, members=members, is_admin=True))
 
 
 @router.callback_query(F.data.startswith("assign:unset:"))
@@ -109,8 +176,8 @@ async def assign_unset(callback: CallbackQuery):
 @router.message(F.text == "📊 Свод")
 async def fleet_summary(message: Message):
     user = await db.get_user(message.from_user.id)
-    if not _require_admin(user):
-        await message.answer("Этот раздел доступен только администратору.")
+    if not _require_view(user):
+        await message.answer("Этот раздел доступен администратору и менеджерам.")
         return
 
     s = await db.fleet_summary()

@@ -9,6 +9,7 @@ from states import ReportFlow
 router = Router()
 
 PAGE_SIZE = kb.PAGE_SIZE
+VIEW_ALL_ROLES = ("admin", "manager")
 
 
 # ---------------- starting a report ----------------
@@ -16,8 +17,11 @@ PAGE_SIZE = kb.PAGE_SIZE
 @router.message(F.text == "📝 Отправить отчёт")
 async def start_report(message: Message, state: FSMContext):
     user = await db.get_user(message.from_user.id)
-    if not user or user["role"] != "team":
-        await message.answer("Отправка отчётов доступна участникам команд.")
+    if not user or user["role"] not in ("leader", "pilot"):
+        await message.answer("Отправка отчётов доступна руководителю и пилотам команды.")
+        return
+    if not user["team_code"]:
+        await message.answer("Сначала привяжитесь к дрону — нажмите /start.")
         return
 
     drones = await db.list_drones(team_code=user["team_code"])
@@ -211,7 +215,10 @@ async def list_reports(message: Message):
     user = await db.get_user(message.from_user.id)
     if not user:
         return
-    team_code = None if user["role"] == "admin" else user["team_code"]
+    if user["role"] not in VIEW_ALL_ROLES and not user["team_code"]:
+        await message.answer("Сначала привяжитесь к дрону — нажмите /start.")
+        return
+    team_code = None if user["role"] in VIEW_ALL_ROLES else user["team_code"]
     total = await db.count_reports(team_code=team_code)
     if total == 0:
         await message.answer("Отчётов пока нет.")
@@ -227,7 +234,7 @@ async def list_reports(message: Message):
 async def paginate_reports(callback: CallbackQuery):
     user = await db.get_user(callback.from_user.id)
     page = int(callback.data.split(":")[2])
-    team_code = None if user["role"] == "admin" else user["team_code"]
+    team_code = None if user["role"] in VIEW_ALL_ROLES else user["team_code"]
     total = await db.count_reports(team_code=team_code)
     reports = await db.list_reports(team_code=team_code, limit=PAGE_SIZE, offset=page * PAGE_SIZE)
     await callback.message.edit_text(
@@ -242,7 +249,7 @@ async def reports_for_drone(callback: CallbackQuery):
     _, _, serial, page = callback.data.split(":")
     page = int(page)
     user = await db.get_user(callback.from_user.id)
-    if user["role"] != "admin":
+    if user["role"] not in VIEW_ALL_ROLES:
         drone = await db.get_drone(serial)
         if not drone or drone["team_code"] != user["team_code"]:
             await callback.answer("Нет доступа", show_alert=True)
@@ -269,7 +276,7 @@ async def open_report(callback: CallbackQuery, bot: Bot):
         return
 
     user = await db.get_user(callback.from_user.id)
-    if user["role"] != "admin" and report["team_code"] != user["team_code"]:
+    if user["role"] not in VIEW_ALL_ROLES and report["team_code"] != user["team_code"]:
         await callback.answer("Нет доступа", show_alert=True)
         return
 

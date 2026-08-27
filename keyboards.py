@@ -12,31 +12,58 @@ def main_menu_admin() -> ReplyKeyboardMarkup:
     kb = [
         [KeyboardButton(text="🚁 Дроны"), KeyboardButton(text="👥 Команды")],
         [KeyboardButton(text="📊 Свод"), KeyboardButton(text="📋 Отчёты")],
+        [KeyboardButton(text="👤 Заявки на регистрацию")],
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 
 
-def main_menu_team(is_leader=False) -> ReplyKeyboardMarkup:
+def main_menu_manager() -> ReplyKeyboardMarkup:
+    kb = [
+        [KeyboardButton(text="🚁 Дроны"), KeyboardButton(text="👥 Команды")],
+        [KeyboardButton(text="📊 Свод"), KeyboardButton(text="📋 Отчёты")],
+    ]
+    return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+
+
+def main_menu_field() -> ReplyKeyboardMarkup:
+    """Leader/pilot menu — both can enter equipment data and submit reports."""
     kb = [
         [KeyboardButton(text="🚁 Мои дроны")],
         [KeyboardButton(text="📝 Отправить отчёт"), KeyboardButton(text="📋 Мои отчёты")],
+        [KeyboardButton(text="⚙️ Данные дрона"), KeyboardButton(text="🚿 Промывка дрона")],
     ]
-    if is_leader:
-        kb.append([KeyboardButton(text="⚙️ Данные дрона")])
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 
 
-def leader_choice_kb():
-    builder = InlineKeyboardBuilder()
-    builder.row(InlineKeyboardButton(text="Я руководитель команды", callback_data="role:leader"))
-    builder.row(InlineKeyboardButton(text="Я пилот", callback_data="role:pilot"))
-    return builder.as_markup()
+def request_contact_kb() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="📱 Отправить номер телефона", request_contact=True)]],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
 
 
 def cancel_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text="❌ Отмена")]], resize_keyboard=True
     )
+
+
+def pending_list_kb(pending_users):
+    builder = InlineKeyboardBuilder()
+    for u in pending_users:
+        label = u["full_name"] or str(u["telegram_id"])
+        builder.row(InlineKeyboardButton(text=label, callback_data=f"reg:open:{u['telegram_id']}"))
+    return builder.as_markup()
+
+
+def role_assign_kb(telegram_id):
+    builder = InlineKeyboardBuilder()
+    builder.row(InlineKeyboardButton(text="👑 Руководитель", callback_data=f"reg:role:{telegram_id}:leader"))
+    builder.row(InlineKeyboardButton(text="🧑‍✈️ Пилот", callback_data=f"reg:role:{telegram_id}:pilot"))
+    builder.row(InlineKeyboardButton(text="🗂 Менеджер", callback_data=f"reg:role:{telegram_id}:manager"))
+    builder.row(InlineKeyboardButton(text="❌ Отклонить заявку", callback_data=f"reg:reject:{telegram_id}"))
+    return builder.as_markup()
 
 
 def drones_list_kb(drones, page=0, prefix="drone"):
@@ -61,18 +88,18 @@ def drones_list_kb(drones, page=0, prefix="drone"):
     return builder.as_markup()
 
 
-def drone_card_kb(serial, is_admin, is_leader=False):
+def drone_card_kb(serial, is_admin=False, can_manage_equipment=False, has_team=False):
     builder = InlineKeyboardBuilder()
-    if is_admin:
-        builder.row(
-            InlineKeyboardButton(text="👥 Назначить команду", callback_data=f"assign:menu:{serial}")
-        )
+    if can_manage_equipment:
         builder.row(
             InlineKeyboardButton(text="🔧 Обновить показания", callback_data=f"upd:menu:{serial}")
         )
-    if is_leader:
         builder.row(
             InlineKeyboardButton(text="✏️ Внести/изменить данные", callback_data=f"equip:start:{serial}")
+        )
+    if is_admin and has_team:
+        builder.row(
+            InlineKeyboardButton(text="🔓 Открепить от экипажа", callback_data=f"assign:unset:{serial}")
         )
     builder.row(
         InlineKeyboardButton(text="📋 Отчёты по этому дрону", callback_data=f"reports:drone:{serial}:0")
@@ -81,24 +108,28 @@ def drone_card_kb(serial, is_admin, is_leader=False):
     return builder.as_markup()
 
 
-def assign_team_kb(serial, teams):
-    builder = InlineKeyboardBuilder()
-    for t in teams:
-        builder.row(InlineKeyboardButton(text=f"Команда {t['code']}", callback_data=f"assign:set:{serial}:{t['code']}"))
-    builder.row(InlineKeyboardButton(text="🚫 Снять команду", callback_data=f"assign:unset:{serial}"))
-    builder.row(InlineKeyboardButton(text="⬅️ Назад", callback_data=f"drone:{serial}"))
-    return builder.as_markup()
-
-
 def teams_list_kb(teams):
+    """teams: rows with 'code' and optional 'name' (db.list_claimed_teams_with_names)."""
     builder = InlineKeyboardBuilder()
     for t in teams:
-        builder.row(InlineKeyboardButton(text=f"Команда {t['code']}", callback_data=f"team:{t['code']}"))
+        label = t["name"] or f"Команда {t['code']}"
+        builder.row(InlineKeyboardButton(text=label, callback_data=f"team:{t['code']}"))
     return builder.as_markup()
 
 
-def team_card_kb(code):
+def team_card_kb(code, members=None, is_admin=False):
     builder = InlineKeyboardBuilder()
+    if is_admin:
+        builder.row(
+            InlineKeyboardButton(text="✏️ Переименовать команду", callback_data=f"team_rename:{code}")
+        )
+        for m in members or []:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"❌ Удалить {m['full_name']}",
+                    callback_data=f"team_kick:{m['telegram_id']}:{code}",
+                )
+            )
     builder.row(InlineKeyboardButton(text="⬅️ К командам", callback_data="teams:list"))
     return builder.as_markup()
 

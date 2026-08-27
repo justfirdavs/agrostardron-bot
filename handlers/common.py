@@ -1,23 +1,76 @@
+import db
 import keyboards as kb
 from config import COMPANY_NAME
 
 
-async def send_main_menu(message, user):
-    if user["role"] == "admin":
+ROLE_LABELS = {
+    "admin": "администратор",
+    "manager": "менеджер",
+    "leader": "руководитель команды",
+    "pilot": "пилот",
+}
+
+
+async def send_main_menu(message, user, state=None):
+    role = user["role"]
+    if role == "admin":
         await message.answer(
             f"Главное меню — {COMPANY_NAME} (админ)",
             reply_markup=kb.main_menu_admin(),
         )
-    else:
-        team_label = f" (команда {user['team_code']})" if user["team_code"] else ""
-        role_label = " · руководитель" if user["is_leader"] else ""
+    elif role == "manager":
         await message.answer(
-            f"Главное меню{team_label}{role_label}",
-            reply_markup=kb.main_menu_team(is_leader=bool(user["is_leader"])),
+            f"Главное меню — {COMPANY_NAME} (менеджер)",
+            reply_markup=kb.main_menu_manager(),
+        )
+    elif role in ("leader", "pilot"):
+        if not user["team_code"]:
+            if state is not None:
+                await start_claim_flow(message, state, user)
+            else:
+                await message.answer(
+                    "Вы ещё не привязаны к дрону. Нажмите /start, чтобы ввести серийный номер."
+                )
+            return
+        team_name = await db.get_team_name(user["team_code"])
+        team_label = team_name or f"команда {user['team_code']}"
+        await message.answer(
+            f"Главное меню ({team_label}) · {ROLE_LABELS[role]}",
+            reply_markup=kb.main_menu_field(),
+        )
+    else:
+        await message.answer(
+            "Ваша заявка на регистрацию отправлена администратору и ожидает "
+            "назначения роли. Как только это произойдёт, вам придёт уведомление."
         )
 
 
-def format_drone_card(drone, team_members, batteries, generator, vehicle, repair_stats, gen_repair_stats, recent_repairs):
+async def start_claim_flow(message, state, user):
+    """Prompt a freshly-approved leader/pilot to type their drone's serial
+    number so the system can attach them to their team."""
+    from aiogram.types import ReplyKeyboardRemove
+    from states import ClaimDrone
+
+    if user["role"] == "leader":
+        await state.set_state(ClaimDrone.leader_serial)
+        await message.answer(
+            "Чтобы начать работу, привяжите себя к дрону вашей команды.\n\n"
+            "Введите серийный номер дрона (заводской номер, указанный на самом дроне):",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+    else:
+        await state.set_state(ClaimDrone.pilot_serial)
+        await message.answer(
+            "Чтобы начать работу, привяжитесь к дрону вашей команды.\n\n"
+            "Введите серийный номер дрона — тот же, что вводил ваш руководитель:",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+
+
+def format_drone_card(
+    drone, team_members, batteries, generator, vehicle, repair_stats, gen_repair_stats,
+    recent_repairs, team_name=None,
+):
     import utils
 
     lines = []
@@ -28,11 +81,19 @@ def format_drone_card(drone, team_members, batteries, generator, vehicle, repair
 
     lines.append("<b>Команда</b>")
     if drone["team_code"]:
-        lines.append(f"Команда {drone['team_code']}")
+        team_label = f"{team_name} (код {drone['team_code']})" if team_name else f"Команда {drone['team_code']}"
+        lines.append(team_label)
         if team_members:
             for m in team_members:
-                tag = "👑 руководитель" if m["is_leader"] else "пилот"
+                tag = "👑 руководитель" if m["role"] == "leader" else "пилот"
+                contact_bits = []
+                if m["phone"]:
+                    contact_bits.append(m["phone"])
+                if m["username"]:
+                    contact_bits.append(f"@{m['username']}")
+                contact = " · ".join(contact_bits) if contact_bits else "контакт не указан"
                 lines.append(f"  • {m['full_name']} ({tag})")
+                lines.append(f"    📱 {contact}")
         else:
             lines.append("  Пока никто из команды не зарегистрирован в боте")
     else:

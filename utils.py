@@ -42,6 +42,15 @@ def vehicle_oil_status(mileage_km, interval_km, last_change_km):
     return "🟢 Норма", remaining
 
 
+def status_tier(label):
+    """Maps a status label to a severity tier: 0 normal, 1 warning, 2 critical."""
+    if "Заменить" in label or "Пора" in label:
+        return 2
+    if "Скоро" in label:
+        return 1
+    return 0
+
+
 def fmt_num(v, suffix=""):
     if v is None:
         return "—"

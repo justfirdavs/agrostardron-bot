@@ -1,11 +1,6 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
-class Registration(StatesGroup):
-    waiting_team_code = State()
-    waiting_leader_choice = State()
-
-
 class EquipmentSetup(StatesGroup):
     choosing_drone = State()
     generator_serial = State()
@@ -40,3 +35,18 @@ class UpdateFlow(StatesGroup):
 
 class PromoteFlow(StatesGroup):
     waiting_id = State()
+
+
+class ClaimDrone(StatesGroup):
+    """Leader/pilot self-attaches to a drone by typing its serial number,
+    right after the admin approves their registration."""
+    leader_serial = State()
+    pilot_serial = State()
+
+
+class WashReport(StatesGroup):
+    waiting_video = State()
+
+
+class TeamRename(StatesGroup):
+    waiting_name = State()

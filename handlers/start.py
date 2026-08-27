@@ -1,14 +1,13 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, ReplyKeyboardRemove
 
 import config
 import db
 import keyboards as kb
-from states import Registration, PromoteFlow
+from states import PromoteFlow
 from handlers.common import send_main_menu
-from handlers import equipment
 
 router = Router()
 
@@ -19,7 +18,7 @@ async def cmd_start(message: Message, state: FSMContext):
     user = await db.get_user(message.from_user.id)
     if user:
         await message.answer("С возвращением! 👋")
-        await send_main_menu(message, user)
+        await send_main_menu(message, user, state)
         return
 
     # No account yet. Decide role.
@@ -36,63 +35,60 @@ async def cmd_start(message: Message, state: FSMContext):
         await message.answer(
             f"Добро пожаловать, {message.from_user.full_name}!\n\n"
             f"Вы зарегистрированы как <b>администратор</b> бота {config.COMPANY_NAME}.\n"
-            f"Вам доступен весь парк дронов, команды и все отчёты.",
+            f"Вам доступен весь парк дронов, команды, заявки и все отчёты.",
         )
         user = await db.get_user(message.from_user.id)
-        await send_main_menu(message, user)
+        await send_main_menu(message, user, state)
         return
 
     await message.answer(
         "Добро пожаловать в бот <b>АгроСтарДрон</b>! 🚁\n\n"
-        "Чтобы получить доступ к своим дронам и отправлять отчёты, "
-        "введите код своей команды (его даёт администратор), например: <code>A</code>",
+        "Для регистрации поделитесь своим номером телефона — нажмите кнопку "
+        "ниже. Заявка уйдёт администратору, он назначит вам роль (руководитель, "
+        "пилот или менеджер).",
+        reply_markup=kb.request_contact_kb(),
     )
-    await state.set_state(Registration.waiting_team_code)
 
 
-@router.message(Registration.waiting_team_code)
-async def process_team_code(message: Message, state: FSMContext):
-    code = message.text.strip().upper()
-    team = await db.get_team(code)
-    if not team:
-        await message.answer(
-            "Такой команды не найдено. Проверьте код у администратора и попробуйте ещё раз."
-        )
+@router.message(F.contact)
+async def receive_contact(message: Message, bot: Bot, state: FSMContext):
+    if not message.contact or message.contact.user_id != message.from_user.id:
+        await message.answer("Пожалуйста, поделитесь именно своим номером телефона.")
         return
 
-    await state.update_data(team_code=code)
-    await state.set_state(Registration.waiting_leader_choice)
+    existing = await db.get_user(message.from_user.id)
+    if existing:
+        await message.answer("Вы уже зарегистрированы.", reply_markup=ReplyKeyboardRemove())
+        await send_main_menu(message, existing, state)
+        return
+
+    await db.create_pending_user(
+        telegram_id=message.from_user.id,
+        full_name=message.from_user.full_name,
+        username=message.from_user.username,
+        phone=message.contact.phone_number,
+    )
     await message.answer(
-        f"Команда <b>{code}</b> найдена. Кто вы в этой команде?",
-        reply_markup=kb.leader_choice_kb(),
+        "Спасибо! Заявка отправлена администратору. Как только он назначит "
+        "вам роль, вы получите уведомление здесь.",
+        reply_markup=ReplyKeyboardRemove(),
     )
 
-
-@router.callback_query(Registration.waiting_leader_choice, F.data.in_({"role:leader", "role:pilot"}))
-async def process_leader_choice(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    code = data["team_code"]
-    is_leader = callback.data == "role:leader"
-
-    await db.create_user(
-        telegram_id=callback.from_user.id,
-        full_name=callback.from_user.full_name,
-        username=callback.from_user.username,
-        role="team",
-        team_code=code,
-        is_leader=is_leader,
+    admins = await db.list_all_admins()
+    text = (
+        f"🆕 <b>Новая заявка на регистрацию</b>\n"
+        f"Имя: {message.from_user.full_name}\n"
+        f"Username: @{message.from_user.username or '—'}\n"
+        f"Телефон: {message.contact.phone_number}\n\n"
+        f"Назначьте роль:"
     )
-    await state.clear()
-
-    role_txt = "руководитель команды" if is_leader else "пилот"
-    await callback.message.edit_text(f"Готово! Вы прикреплены к команде <b>{code}</b> как {role_txt}.")
-    await callback.answer()
-
-    user = await db.get_user(callback.from_user.id)
-    await send_main_menu(callback.message, user)
-
-    if is_leader:
-        await equipment.maybe_start_wizard(callback.message, state, code)
+    for admin in admins:
+        try:
+            await bot.send_message(
+                admin["telegram_id"], text, reply_markup=kb.role_assign_kb(message.from_user.id)
+            )
+        except Exception:
+            continue
 
 
 @router.message(Command("whoami"))
@@ -101,11 +97,11 @@ async def cmd_whoami(message: Message):
     if not user:
         await message.answer("Вы ещё не зарегистрированы. Нажмите /start")
         return
-    if user["role"] == "admin":
-        role = "Администратор"
-    else:
-        role = f"Команда {user['team_code']}" + (" (руководитель)" if user["is_leader"] else "")
-    await message.answer(f"ID: <code>{message.from_user.id}</code>\nРоль: {role}")
+    from handlers.common import ROLE_LABELS
+
+    role = ROLE_LABELS.get(user["role"], "заявка на рассмотрении")
+    team = f" · команда {user['team_code']}" if user["team_code"] else ""
+    await message.answer(f"ID: <code>{message.from_user.id}</code>\nРоль: {role}{team}")
 
 
 @router.message(Command("promote"))
@@ -154,6 +150,6 @@ async def cmd_cancel(message: Message, state: FSMContext):
     user = await db.get_user(message.from_user.id)
     if user:
         await message.answer("Отменено.")
-        await send_main_menu(message, user)
+        await send_main_menu(message, user, state)
     else:
         await message.answer("Отменено. Нажмите /start, чтобы начать заново.")

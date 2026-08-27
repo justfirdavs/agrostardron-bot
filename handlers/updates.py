@@ -1,9 +1,10 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 import db
 import keyboards as kb
+import notify
 from states import UpdateFlow
 
 router = Router()
@@ -19,17 +20,28 @@ PROMPTS = {
 }
 
 
-async def _is_admin(telegram_id):
-    user = await db.get_user(telegram_id)
-    return user and user["role"] == "admin"
+async def _drone_serial_for(kind, target):
+    """Which drone this reading belongs to, so we can check edit permission."""
+    if kind in ("flighthours", "flightcount"):
+        return target
+    if kind in ("genhours", "genoil"):
+        generator = await db.get_generator(target)
+        return generator["drone_serial"] if generator else None
+    if kind in ("vehkm", "vehoil"):
+        vehicle = await db.get_vehicle(target)
+        return vehicle["drone_serial"] if vehicle else None
+    if kind == "batcycles":
+        battery = await db.get_battery(int(target))
+        return battery["drone_serial"] if battery else None
+    return None
 
 
 @router.callback_query(F.data.startswith("upd:menu:"))
 async def open_update_menu(callback: CallbackQuery):
-    if not await _is_admin(callback.from_user.id):
-        await callback.answer("Только для администратора", show_alert=True)
-        return
     serial = callback.data.split(":", 2)[2]
+    if not await db.can_edit_drone(callback.from_user.id, serial):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
     drone = await db.get_drone(serial)
     if not drone:
         await callback.answer("Дрон не найден", show_alert=True)
@@ -48,13 +60,15 @@ async def open_update_menu(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("upd:"))
 async def start_update_flow(callback: CallbackQuery, state: FSMContext):
-    if not await _is_admin(callback.from_user.id):
-        await callback.answer("Только для администратора", show_alert=True)
-        return
     parts = callback.data.split(":")
     _, kind, target = parts[0], parts[1], parts[2]
     if kind == "menu":
         return  # handled above
+
+    drone_serial = await _drone_serial_for(kind, target)
+    if not drone_serial or not await db.can_edit_drone(callback.from_user.id, drone_serial):
+        await callback.answer("Нет доступа", show_alert=True)
+        return
 
     prompt = PROMPTS.get(kind, "Введите новое значение:")
     await state.update_data(kind=kind, target=target)
@@ -64,7 +78,7 @@ async def start_update_flow(callback: CallbackQuery, state: FSMContext):
 
 
 @router.message(UpdateFlow.waiting_value)
-async def receive_update_value(message: Message, state: FSMContext):
+async def receive_update_value(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     kind = data.get("kind")
     target = data.get("target")
@@ -93,21 +107,25 @@ async def receive_update_value(message: Message, state: FSMContext):
         generator = await db.get_generator(target)
         serial_for_card = generator["drone_serial"] if generator else None
         confirm = f"Моточасы генератора обновлены: {value} ч"
+        await notify.check_generator(bot, target)
     elif kind == "genoil":
         await db.reset_generator_oil(target, value)
         generator = await db.get_generator(target)
         serial_for_card = generator["drone_serial"] if generator else None
         confirm = f"Замена масла генератора зафиксирована на {value} моточасах"
+        await notify.check_generator(bot, target)
     elif kind == "vehkm":
         await db.update_vehicle_mileage(target, value)
         vehicle = await db.get_vehicle(target)
         serial_for_card = vehicle["drone_serial"] if vehicle else None
         confirm = f"Пробег автомобиля обновлён: {value} км"
+        await notify.check_vehicle(bot, target)
     elif kind == "vehoil":
         await db.reset_vehicle_oil(target, value)
         vehicle = await db.get_vehicle(target)
         serial_for_card = vehicle["drone_serial"] if vehicle else None
         confirm = f"Замена масла авто зафиксирована на {value} км пробега"
+        await notify.check_vehicle(bot, target)
     elif kind == "batcycles":
         battery = await db.get_battery(int(target))
         if not battery:
@@ -117,6 +135,7 @@ async def receive_update_value(message: Message, state: FSMContext):
         await db.update_battery_cycles(int(target), int(value))
         serial_for_card = battery["drone_serial"]
         confirm = f"Циклы батареи {battery['serial']} обновлены: {int(value)}"
+        await notify.check_battery(bot, int(target))
     else:
         await message.answer("Неизвестное действие.")
         await state.clear()
