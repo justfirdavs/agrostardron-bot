@@ -9,7 +9,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 import config
 import db
 import scheduler
-from handlers import start, drones, teams, updates, reports, equipment, registration, claim, wash
+from handlers import start, drones, teams, updates, reports, equipment, registration, claim, wash, reset
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +24,7 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_router(start.router)
+    dp.include_router(reset.router)
     dp.include_router(registration.router)
     dp.include_router(claim.router)
     dp.include_router(equipment.router)

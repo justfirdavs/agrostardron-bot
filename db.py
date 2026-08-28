@@ -913,6 +913,44 @@ async def fleet_summary():
     }
 
 
+async def reset_test_data(keep_telegram_id=None):
+    """Admin-triggered full reset for clearing out test data before going
+    live: wipes every registration, team claim, generator/battery/vehicle
+    entry, report and wash video, and restores the 17-drone fleet to its
+    original Excel-seeded values (manufacturer/model/flight hours) with
+    nothing attached. `keep_telegram_id`, if given, is kept in `users` so
+    the admin who triggered the reset isn't locked out of their own bot."""
+    conn = await get_conn()
+
+    if keep_telegram_id is not None:
+        await conn.execute("DELETE FROM users WHERE telegram_id != ?", (keep_telegram_id,))
+    else:
+        await conn.execute("DELETE FROM users")
+
+    await conn.execute("DELETE FROM batteries")
+    await conn.execute("DELETE FROM generators")
+    await conn.execute("DELETE FROM vehicles")
+    await conn.execute("DELETE FROM reports")
+    await conn.execute("DELETE FROM report_media")
+    await conn.execute("DELETE FROM wash_reports")
+    await conn.execute("DELETE FROM teams")
+    await conn.execute(
+        "UPDATE drones SET team_code = NULL, vehicle_plate = NULL, generator_serial = NULL"
+    )
+    await conn.commit()
+
+    if os.path.exists(config.SEED_FILE):
+        with open(config.SEED_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+        for serial, d in data["drones"].items():
+            await conn.execute(
+                "UPDATE drones SET manufacturer = ?, model = ?, flight_hours = ?, flight_count = ? "
+                "WHERE serial = ?",
+                (d["manufacturer"], d["model"], d["flight_hours"], d["flight_count"], serial),
+            )
+        await conn.commit()
+
+
 async def list_all_admins():
     conn = await get_conn()
     cur = await conn.execute("SELECT * FROM users WHERE role = 'admin'")
