@@ -173,6 +173,152 @@ async def assign_unset(callback: CallbackQuery):
     await callback.answer()
 
 
+async def _drone_team_label(drone):
+    if not drone or not drone["team_code"]:
+        return ""
+    name = await db.get_team_name(drone["team_code"])
+    return f" · команда {name or drone['team_code']}"
+
+
+async def _send_chunked(message, lines, chunk_chars=3500):
+    """Sends `lines` as one or more messages, never splitting a single
+    line's own '• ...' / indented continuation apart."""
+    buf = []
+    length = 0
+    for line in lines:
+        add = len(line) + 1
+        if length + add > chunk_chars and buf:
+            await message.answer("\n".join(buf))
+            buf = []
+            length = 0
+        buf.append(line)
+        length += add
+    if buf:
+        await message.answer("\n".join(buf))
+
+
+FIELD_ROLES = ("leader", "pilot")
+
+
+async def _own_team_or_none(message, user):
+    """For a leader/pilot: their team_code, after checking they're attached
+    and telling them if not. Returns None if the caller should stop (either
+    not attached, or not a valid role at all — handled by the caller)."""
+    if not user["team_code"]:
+        await message.answer("Сначала привяжитесь к дрону — нажмите /start.")
+        return None
+    return user["team_code"]
+
+
+@router.message(F.text == "⚡ Генераторы")
+async def list_generators(message: Message):
+    user = await db.get_user(message.from_user.id)
+    if not user or user["role"] not in ("admin", "manager") + FIELD_ROLES:
+        await message.answer("Нажмите /start")
+        return
+
+    own_only = user["role"] in FIELD_ROLES
+    team_code = None
+    if own_only:
+        team_code = await _own_team_or_none(message, user)
+        if team_code is None:
+            return
+
+    generators = await db.list_generators(team_code=team_code)
+    if not generators:
+        msg = "Данные генератора ещё не внесены." if own_only else "Пока ни один генератор не внесён."
+        await message.answer(msg)
+        return
+
+    title = "⚡ <b>Ваш генератор</b>" if own_only else f"⚡ <b>Генераторы парка ({len(generators)})</b>"
+    lines = [title, ""]
+    for g in generators:
+        team_label = ""
+        if not own_only:
+            drone = await db.get_drone(g["drone_serial"])
+            team_label = await _drone_team_label(drone)
+        status, remaining = utils.generator_oil_status(
+            g["work_hours"], g["oil_change_interval_hours"], g["last_oil_change_hours"]
+        )
+        rem_txt = f", осталось {utils.fmt_num(remaining, ' ч')}" if remaining is not None else ""
+        lines.append(f"• S/N <code>{g['serial']}</code> — дрон {g['drone_serial']}{team_label}")
+        lines.append(f"  Моточасы: {utils.fmt_num(g['work_hours'], ' ч')} · {status}{rem_txt}")
+    await _send_chunked(message, lines)
+
+
+@router.message(F.text == "🔋 Батареи")
+async def list_batteries(message: Message):
+    user = await db.get_user(message.from_user.id)
+    if not user or user["role"] not in ("admin", "manager") + FIELD_ROLES:
+        await message.answer("Нажмите /start")
+        return
+
+    own_only = user["role"] in FIELD_ROLES
+    team_code = None
+    if own_only:
+        team_code = await _own_team_or_none(message, user)
+        if team_code is None:
+            return
+
+    batteries = await db.list_batteries(team_code=team_code)
+    if not batteries:
+        msg = "Данные батарей ещё не внесены." if own_only else "Пока ни одна батарея не внесена."
+        await message.answer(msg)
+        return
+
+    title = f"🔋 <b>Ваши батареи ({len(batteries)})</b>" if own_only else f"🔋 <b>Батареи парка ({len(batteries)})</b>"
+    lines = [title, ""]
+    for b in batteries:
+        team_label = ""
+        if not own_only:
+            drone = await db.get_drone(b["drone_serial"])
+            team_label = await _drone_team_label(drone)
+        status, remaining = utils.battery_status(b["cycles"], b["resource_cycles"])
+        rem_txt = f", осталось {remaining} циклов" if remaining is not None else ""
+        lines.append(f"• S/N <code>{b['serial']}</code> (слот {b['slot']}) — дрон {b['drone_serial']}{team_label}")
+        lines.append(f"  Циклы: {utils.fmt_num(b['cycles'])}{rem_txt} — {status}")
+    await _send_chunked(message, lines)
+
+
+@router.message(F.text == "🚗 Автомобили")
+async def list_vehicles(message: Message):
+    user = await db.get_user(message.from_user.id)
+    if not user or user["role"] not in ("admin", "manager") + FIELD_ROLES:
+        await message.answer("Нажмите /start")
+        return
+
+    own_only = user["role"] in FIELD_ROLES
+    team_code = None
+    if own_only:
+        team_code = await _own_team_or_none(message, user)
+        if team_code is None:
+            return
+
+    vehicles = await db.list_vehicles(team_code=team_code)
+    if not vehicles:
+        msg = "Данные автомобиля ещё не внесены." if own_only else "Пока ни один автомобиль не внесён."
+        await message.answer(msg)
+        return
+
+    title = "🚗 <b>Ваш автомобиль</b>" if own_only else f"🚗 <b>Автомобили парка ({len(vehicles)})</b>"
+    lines = [title, ""]
+    for v in vehicles:
+        team_label = ""
+        if not own_only:
+            drone = await db.get_drone(v["drone_serial"])
+            team_label = await _drone_team_label(drone)
+        status, remaining = utils.vehicle_oil_status(
+            v["mileage_km"], v["oil_change_interval_km"], v["last_oil_change_km"]
+        )
+        rem_txt = f", осталось {utils.fmt_num(remaining, ' км')}" if remaining is not None else ""
+        lines.append(
+            f"• {v['manufacturer']} — гос.номер <code>{v['plate_number']}</code> — "
+            f"дрон {v['drone_serial']}{team_label}"
+        )
+        lines.append(f"  Пробег: {utils.fmt_num(v['mileage_km'], ' км')}{rem_txt} — {status}")
+    await _send_chunked(message, lines)
+
+
 @router.message(F.text == "📊 Свод")
 async def fleet_summary(message: Message):
     user = await db.get_user(message.from_user.id)

@@ -838,6 +838,53 @@ async def has_washed_today(team_code, wash_date):
     return len(rows) > 0
 
 
+# ---------- full parkwide equipment listings (admin/manager) ----------
+
+async def list_generators(team_code=None):
+    conn = await get_conn()
+    if team_code:
+        cur = await conn.execute(
+            "SELECT g.* FROM generators g JOIN drones d ON d.serial = g.drone_serial "
+            "WHERE d.team_code = ? ORDER BY g.drone_serial",
+            (team_code,),
+        )
+    else:
+        cur = await conn.execute(
+            "SELECT * FROM generators WHERE drone_serial IS NOT NULL ORDER BY drone_serial"
+        )
+    return await cur.fetchall()
+
+
+async def list_batteries(team_code=None):
+    conn = await get_conn()
+    if team_code:
+        cur = await conn.execute(
+            "SELECT b.* FROM batteries b JOIN drones d ON d.serial = b.drone_serial "
+            "WHERE d.team_code = ? ORDER BY b.drone_serial, b.slot",
+            (team_code,),
+        )
+    else:
+        cur = await conn.execute(
+            "SELECT * FROM batteries WHERE drone_serial IS NOT NULL ORDER BY drone_serial, slot"
+        )
+    return await cur.fetchall()
+
+
+async def list_vehicles(team_code=None):
+    conn = await get_conn()
+    if team_code:
+        cur = await conn.execute(
+            "SELECT v.* FROM vehicles v JOIN drones d ON d.serial = v.drone_serial "
+            "WHERE d.team_code = ? ORDER BY v.drone_serial",
+            (team_code,),
+        )
+    else:
+        cur = await conn.execute(
+            "SELECT * FROM vehicles WHERE drone_serial IS NOT NULL ORDER BY drone_serial"
+        )
+    return await cur.fetchall()
+
+
 # ---------- fleet-wide summary ----------
 
 async def fleet_summary():

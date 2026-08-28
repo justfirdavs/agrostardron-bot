@@ -73,6 +73,33 @@ async def digest_loop(bot):
         await asyncio.sleep(60)
 
 
+def _contact(member):
+    if not member:
+        return "не назначен"
+    if member["username"]:
+        return f"@{member['username']}"
+    if member["phone"]:
+        return member["phone"]
+    return member["full_name"] or "контакт не указан"
+
+
+async def _format_missing_entry(team_code, drone_serial):
+    """'Команда A\n(дрон XXXX)\nРуководитель: @user\nПилот 1: @user1\n...'"""
+    team_name = await db.get_team_name(team_code)
+    header = team_name or f"Команда {team_code}"
+    members = await db.list_team_members(team_code)
+    leader = next((m for m in members if m["role"] == "leader"), None)
+    pilots = [m for m in members if m["role"] == "pilot"]
+
+    lines = [header, f"(дрон {drone_serial})", f"Руководитель: {_contact(leader)}"]
+    if pilots:
+        for i, p in enumerate(pilots, start=1):
+            lines.append(f"Пилот {i}: {_contact(p)}")
+    else:
+        lines.append("Пилоты: не назначены")
+    return "\n".join(lines)
+
+
 async def _run_digest(bot):
     yesterday = (_now_local() - timedelta(days=1)).strftime("%Y-%m-%d")
     date_label = datetime.strptime(yesterday, "%Y-%m-%d").strftime("%d.%m.%Y")
@@ -98,12 +125,28 @@ async def _run_digest(bot):
                 except Exception:
                     continue
         else:
-            missing.append(f"{team_code} (дрон {drone_serial})")
+            missing.append(await _format_missing_entry(team_code, drone_serial))
 
     if missing:
-        text = f"⚠️ Не промыли дрон {date_label}:\n" + "\n".join(f"  • {m}" for m in missing)
-        for r in recipients:
-            try:
-                await bot.send_message(r["telegram_id"], text)
-            except Exception:
-                continue
+        for chunk in _chunk_entries(f"⚠️ Не промыли дрон {date_label}:", missing):
+            for r in recipients:
+                try:
+                    await bot.send_message(r["telegram_id"], chunk)
+                except Exception:
+                    continue
+
+
+def _chunk_entries(header, entries, sep="\n\n", limit=3500):
+    """Groups entries into messages under Telegram's length limit, each
+    prefixed with the header so a split digest still reads standalone."""
+    chunks = []
+    current = header
+    for entry in entries:
+        candidate = f"{current}{sep}{entry}"
+        if len(candidate) > limit and current != header:
+            chunks.append(current)
+            current = f"{header}{sep}{entry}"
+        else:
+            current = candidate
+    chunks.append(current)
+    return chunks
