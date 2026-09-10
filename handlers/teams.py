@@ -386,3 +386,86 @@ async def fleet_summary(message: Message):
             lines.append(f"  • Авто {v['plate_number']} (дрон {v['drone_serial']})")
 
     await message.answer("\n".join(lines))
+
+
+def _member_label(member):
+    if not member:
+        return "не назначен"
+    label = member["full_name"] or str(member["telegram_id"])
+    if member["username"]:
+        label += f" (@{member['username']})"
+    return label
+
+
+async def _format_team_equipment_block(code):
+    """Full per-team equipment breakdown for '📊 Свод по командам':
+    roster, drone, batteries (with status), generator and vehicle (with
+    computed remaining-until-threshold phrasing)."""
+    name = await db.get_team_name(code)
+    header = f"Команда {name}" if name else f"Команда {code}"
+
+    members = await db.list_team_members(code)
+    leader = next((m for m in members if m["role"] == "leader"), None)
+    pilots = [m for m in members if m["role"] == "pilot"]
+
+    lines = [header, f"Руководитель: {_member_label(leader)}"]
+    if pilots:
+        for p in pilots:
+            lines.append(f"Пилот: {_member_label(p)}")
+    else:
+        lines.append("Пилот: не назначен")
+
+    drone_serial = await db.get_team_drone_serial(code)
+    drone = await db.get_drone(drone_serial) if drone_serial else None
+    if drone:
+        lines.append(f"Дрон: {drone['model']}")
+        lines.append(f"Серийный номер: {drone['serial']}")
+    else:
+        lines.append("Дрон: не привязан")
+
+    batteries = await db.get_batteries(drone_serial) if drone_serial else []
+    if batteries:
+        for b in batteries:
+            lines.append(f"🔋 Батарейка {b['slot']}: {b['serial']}")
+            lines.append(f"Количество циклов: {utils.fmt_num(b['cycles'])}")
+            status, _ = utils.battery_status(b["cycles"], b["resource_cycles"])
+            lines.append(utils.display_battery_status(status))
+    else:
+        lines.append("🔋 Батареи: данные ещё не внесены")
+
+    generator = await db.get_generator(drone["generator_serial"]) if drone and drone["generator_serial"] else None
+    lines.append("")
+    if generator:
+        gen_label = f"{generator['manufacturer']}" if generator["manufacturer"] else ""
+        lines.append(f"⚡️ Генератор: {gen_label}".rstrip())
+        lines.append(f"Серийный номер: {generator['serial']}")
+        lines.append(f"Состояние: {utils.generator_status_text(generator)}")
+    else:
+        lines.append("⚡️ Генератор: данные ещё не внесены")
+
+    vehicle = await db.get_vehicle(drone["vehicle_plate"]) if drone and drone["vehicle_plate"] else None
+    lines.append("")
+    if vehicle:
+        lines.append(f"🚗 Автомобиль: {vehicle['plate_number']}")
+        lines.append(utils.vehicle_status_text(vehicle))
+    else:
+        lines.append("🚗 Автомобиль: данные ещё не внесены")
+
+    return "\n".join(lines)
+
+
+@router.message(F.text == "📊 Свод по командам")
+async def teams_equipment_summary(message: Message):
+    user = await db.get_user(message.from_user.id)
+    if not _require_view(user):
+        await message.answer("Этот раздел доступен администратору и менеджерам.")
+        return
+    teams = await db.list_claimed_teams()
+    if not teams:
+        await message.answer("Пока ни одна команда не привязана к дрону.")
+        return
+    lines = ["📊 <b>Свод по командам</b>"]
+    for code in teams:
+        lines.append("")
+        lines.append(await _format_team_equipment_block(code))
+    await _send_chunked(message, lines)

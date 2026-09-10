@@ -13,6 +13,7 @@ def main_menu_admin() -> ReplyKeyboardMarkup:
         [KeyboardButton(text="🚁 Дроны"), KeyboardButton(text="👥 Команды")],
         [KeyboardButton(text="⚡ Генераторы"), KeyboardButton(text="🔋 Батареи")],
         [KeyboardButton(text="🚗 Автомобили"), KeyboardButton(text="📊 Свод")],
+        [KeyboardButton(text="📊 Свод по командам"), KeyboardButton(text="➕ Добавить дрон")],
         [KeyboardButton(text="📋 Отчёты"), KeyboardButton(text="👤 Заявки на регистрацию")],
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
@@ -23,6 +24,7 @@ def main_menu_manager() -> ReplyKeyboardMarkup:
         [KeyboardButton(text="🚁 Дроны"), KeyboardButton(text="👥 Команды")],
         [KeyboardButton(text="⚡ Генераторы"), KeyboardButton(text="🔋 Батареи")],
         [KeyboardButton(text="🚗 Автомобили"), KeyboardButton(text="📊 Свод")],
+        [KeyboardButton(text="📊 Свод по командам")],
         [KeyboardButton(text="📋 Отчёты")],
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
@@ -34,8 +36,9 @@ def main_menu_field() -> ReplyKeyboardMarkup:
         [KeyboardButton(text="🚁 Мои дроны")],
         [KeyboardButton(text="⚡ Генераторы"), KeyboardButton(text="🔋 Батареи")],
         [KeyboardButton(text="🚗 Автомобили")],
+        [KeyboardButton(text="🌾 Отчёт о работе"), KeyboardButton(text="🚿 Промывка дрона")],
         [KeyboardButton(text="📝 Отправить отчёт"), KeyboardButton(text="📋 Мои отчёты")],
-        [KeyboardButton(text="⚙️ Данные дрона"), KeyboardButton(text="🚿 Промывка дрона")],
+        [KeyboardButton(text="⚙️ Данные дрона")],
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 

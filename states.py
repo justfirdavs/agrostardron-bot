@@ -50,3 +50,22 @@ class WashReport(StatesGroup):
 
 class TeamRename(StatesGroup):
     waiting_name = State()
+
+
+class WorkReport(StatesGroup):
+    """Any team member submits a work report (location/time/rate/area, plus
+    an optional free-text comment) — several per day are allowed."""
+    entering_location = State()
+    entering_time_range = State()
+    entering_rate = State()
+    entering_area = State()
+    entering_comment = State()
+
+
+class AddDrone(StatesGroup):
+    """Admin-only: register a newly purchased drone into the fleet."""
+    serial = State()
+    manufacturer = State()
+    model = State()
+    flight_hours = State()
+    flight_count = State()

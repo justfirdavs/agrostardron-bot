@@ -9,7 +9,10 @@ from aiogram.fsm.storage.memory import MemoryStorage
 import config
 import db
 import scheduler
-from handlers import start, drones, teams, updates, reports, equipment, registration, claim, wash, reset
+from handlers import (
+    start, drones, teams, updates, reports, equipment, registration, claim, wash, reset,
+    workreport, add_drone,
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,13 +32,15 @@ async def main():
     dp.include_router(claim.router)
     dp.include_router(equipment.router)
     dp.include_router(wash.router)
+    dp.include_router(workreport.router)
+    dp.include_router(add_drone.router)
     dp.include_router(drones.router)
     dp.include_router(teams.router)
     dp.include_router(updates.router)
     dp.include_router(reports.router)
 
     await bot.delete_webhook(drop_pending_updates=True)
-    asyncio.create_task(scheduler.evening_reminder_loop(bot))
+    asyncio.create_task(scheduler.hourly_reminder_loop(bot))
     asyncio.create_task(scheduler.digest_loop(bot))
     await dp.start_polling(bot)
 

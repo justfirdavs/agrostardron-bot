@@ -116,6 +116,20 @@ CREATE TABLE IF NOT EXISTS wash_reports (
     wash_date TEXT,
     created_at TEXT
 );
+
+CREATE TABLE IF NOT EXISTS work_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team_code TEXT,
+    drone_serial TEXT,
+    telegram_id INTEGER,
+    report_date TEXT,
+    location TEXT,
+    time_range TEXT,
+    rate_l_ha REAL,
+    area_ha REAL,
+    comment TEXT,
+    created_at TEXT
+);
 """
 
 _db: aiosqlite.Connection | None = None
@@ -187,6 +201,8 @@ async def _uppercase_serials(conn):
         await conn.execute("UPDATE reports SET team_code = ? WHERE team_code = ?", (new, old))
         await conn.execute("UPDATE wash_reports SET drone_serial = ? WHERE drone_serial = ?", (new, old))
         await conn.execute("UPDATE wash_reports SET team_code = ? WHERE team_code = ?", (new, old))
+        await conn.execute("UPDATE work_reports SET drone_serial = ? WHERE drone_serial = ?", (new, old))
+        await conn.execute("UPDATE work_reports SET team_code = ? WHERE team_code = ?", (new, old))
 
     cur = await conn.execute("SELECT serial FROM generators")
     for row in await cur.fetchall():
@@ -487,6 +503,19 @@ async def get_drone(serial: str):
     conn = await get_conn()
     cur = await conn.execute("SELECT * FROM drones WHERE serial = ?", (serial,))
     return await cur.fetchone()
+
+
+async def create_drone(serial, manufacturer, model, flight_hours, flight_count):
+    """Admin adds a newly-purchased drone to the fleet catalog. It starts
+    unattached — the team leader then self-claims it by typing its serial
+    number, exactly like any other drone (handlers/claim.py)."""
+    conn = await get_conn()
+    await conn.execute(
+        "INSERT INTO drones (serial, manufacturer, model, flight_hours, flight_count, "
+        "team_code, vehicle_plate, generator_serial) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL)",
+        (serial, manufacturer, model, flight_hours, flight_count),
+    )
+    await conn.commit()
 
 
 async def get_batteries(drone_serial: str):
@@ -838,6 +867,49 @@ async def has_washed_today(team_code, wash_date):
     return len(rows) > 0
 
 
+# ---------- work reports (daily hectares/rate/location report) ----------
+# A team may submit several per day; get_work_reports_for_team_date orders
+# by area_ha DESC so the best (largest-area) one is always rows[0].
+
+async def create_work_report(
+    team_code, drone_serial, telegram_id, report_date, location, time_range,
+    rate_l_ha, area_ha, comment,
+):
+    conn = await get_conn()
+    cur = await conn.execute(
+        "INSERT INTO work_reports (team_code, drone_serial, telegram_id, report_date, "
+        "location, time_range, rate_l_ha, area_ha, comment, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            team_code, drone_serial, telegram_id, report_date, location, time_range,
+            rate_l_ha, area_ha, comment, datetime.utcnow().isoformat(),
+        ),
+    )
+    await conn.commit()
+    return cur.lastrowid
+
+
+async def get_work_report(report_id):
+    conn = await get_conn()
+    cur = await conn.execute("SELECT * FROM work_reports WHERE id = ?", (report_id,))
+    return await cur.fetchone()
+
+
+async def get_work_reports_for_team_date(team_code, report_date):
+    conn = await get_conn()
+    cur = await conn.execute(
+        "SELECT * FROM work_reports WHERE team_code = ? AND report_date = ? "
+        "ORDER BY area_ha DESC, created_at",
+        (team_code, report_date),
+    )
+    return await cur.fetchall()
+
+
+async def has_work_report_today(team_code, report_date):
+    rows = await get_work_reports_for_team_date(team_code, report_date)
+    return len(rows) > 0
+
+
 # ---------- full parkwide equipment listings (admin/manager) ----------
 
 async def list_generators(team_code=None):
@@ -933,6 +1005,7 @@ async def reset_test_data(keep_telegram_id=None):
     await conn.execute("DELETE FROM reports")
     await conn.execute("DELETE FROM report_media")
     await conn.execute("DELETE FROM wash_reports")
+    await conn.execute("DELETE FROM work_reports")
     await conn.execute("DELETE FROM teams")
     await conn.execute(
         "UPDATE drones SET team_code = NULL, vehicle_plate = NULL, generator_serial = NULL"
